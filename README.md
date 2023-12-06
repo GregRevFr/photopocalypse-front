@@ -1,1 +1,1 @@
-# __ * Repo of front for Photopocalypse* __
+# __ * Repo of frontend code for Photopocalypse* __
