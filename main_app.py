@@ -77,6 +77,13 @@ def build_blurnotblur_page():
                     image_sharpness = "Unknown"  # Replace with actual sharpness value if available
 
                     # Display the image card using the custom HTML and CSS
+                    headers = response.headers
+                    blurriness = headers.get("classification")
+                    if blurriness and blurriness.startswith("This picture is blurry."):
+                        border_color = "red"  # Set the desired border color here
+                    else:
+                        border_color = "green"
+
                     card_html = card(
                         title=file.name,
                         text=f"This image has a {image_sharpness}% of blur.",
@@ -90,7 +97,35 @@ def build_blurnotblur_page():
                                 "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
                                 "display": "flex",
                                 "flex-direction": "column",
-                                "align-items": "center"
+                                "align-items": "center",
+                                "border-color": border_color,  # Use the variable for border color
+                                "border-style": "solid",
+                                "border-width": "2px"
+                            },
+                            'text': {
+                                "font-family": "calibri"
+                            }
+                        }
+                    )
+
+
+                    card_html = card(
+                        title=file.name,
+                        text=f"This image has a {image_sharpness}% of blur.",
+                        image=f"data:image/png;base64,{base64_image}",
+                        styles={
+                            'card': {
+                                "width": "100%",
+                                "height": "auto",
+                                "margin": "10px",
+                                "border-radius": "10px",
+                                "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
+                                "display": "flex",
+                                "flex-direction": "column",
+                                "align-items": "center",
+                                "border-color": border_color,  # Use the variable for border color
+                                "border-style": "solid",
+                                "border-width": "2px"
                             },
                             'text': {
                                 "font-family": "calibri"
