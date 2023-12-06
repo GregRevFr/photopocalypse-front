@@ -1,5 +1,3 @@
 streamlit
 streamlit_option_menu
 requests
-json
-base64
