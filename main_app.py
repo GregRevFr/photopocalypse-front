@@ -167,7 +167,7 @@ def image_logo():
 
     # Leave the first and second column empty
     with col3:
-        image_path = '/Users/mj/Desktop/Captura.png'
+        image_path = 'photos/Captura.png'
         print(f"Image Path: {image_path}")
 
         # Check if the file exists
