@@ -9,6 +9,7 @@ st.set_page_config(page_title="BLURBUSTER",
                     layout="wide")
 
 cards = []
+
 def build_blurnotblur_page():
 
     st.markdown(
@@ -41,13 +42,14 @@ def build_blurnotblur_page():
                               files=files, data=params)
 
             if r.status_code == 200:
-                st.success('API Called With success...Updating Cards Parameters')
+                # st.success('API Called With success...Updating Cards Parameters')
                 # Get the content of the uploaded file
                 file.seek(0)
 
                 file_content = file.read()
 
                 file_extension = file.type.split("/")[-1]
+
                 # Display the card with the uploaded image
                 encoded = base64.b64encode(file_content)
                 data = f"data:image/{file_extension};base64,{encoded.decode('utf-8')}"
@@ -55,13 +57,13 @@ def build_blurnotblur_page():
                 image_sharpness = output.get('sharpness', 0)
 
                 cards.append({
-                    "title": "Image Blur",
+                    "title": "Image",
                     "text": f"This image has a {image_sharpness}% of blur.",
                     "image": data,
                     "styles": {
                         'card': {
                             "width": "250px",
-                            "height": "250px",
+                            "height": "280px",
                             "margin-right": "10px",
                             "margin-bottom": "30px",
                             "border-radius": "10px",
@@ -71,16 +73,27 @@ def build_blurnotblur_page():
                             "align-items": "center"
                         },
                         'text': {
-                            "font-family": "serif"
+                            "font-family": "calibri"
                         }
+                    },
+                    "position": {
+                        "top": "1000px",
+                        "left": "100px"
                     }
                 })
+                st.markdown(
+                '<style>'
+                'div[data-testid="cards.append"] { position: absolute; top: 1000px; left: 0px; }'
+                '</style>',
+                unsafe_allow_html=True
+                )
+
             else:
                 st.warning('Something went wrong!')
+
     display_columns(cards)
 
-
-def card(title, text, image, styles):
+def card(title, text, image, styles, position=None):
     """
     Generate HTML content for a card.
 
@@ -89,6 +102,7 @@ def card(title, text, image, styles):
         text (str): The text of the card.
         image (str): URL or base64 encoded image for the card.
         styles (dict): Dictionary containing styles for the card.
+        position (dict): Dictionary containing position properties (top, left) for the card.
 
     Returns:
         str: HTML content of the card.
@@ -100,7 +114,7 @@ def card(title, text, image, styles):
         <div style="{card_style}">
             <h3 style="{text_style}">{title}</h3>
             <p style="{text_style}">{text}</p>
-            <img src="{image}" alt="{title}" style="width: 80%; max-width: 100%; height: auto; margin-top: 10px;">
+            <img src="{image}" alt="{title}" style="width: 70%; max-width: 70%; height: auto; margin-top: 20px;">
         </div>
     """
     return html_content
@@ -129,7 +143,6 @@ def display_columns(cards):
                 col.markdown(card_content, unsafe_allow_html=True)
                 card_index += 1
 
-
 def sidebar_menu():
     with st.sidebar:
         selected = option_menu(menu_title="BLURBUSTER",
@@ -149,11 +162,10 @@ def sidebar_menu():
     elif selected == "home":
         pass
 
-
 def image_logo():
     col1, col2, col3 = st.columns([1, 2, 3])
-    # Leave the first column empty
-    # In the second column, add the image and apply CSS styling
+
+    # Leave the first and second column empty
     with col3:
         image_path = '/Users/mj/Desktop/Captura.png'
         print(f"Image Path: {image_path}")
@@ -166,7 +178,7 @@ def image_logo():
             print("Image file does not exist. Please check the file path.")
 
         st.markdown(
-            f'<img src="data:image/png;base64,{base64.b64encode(open(image_path, "rb").read()).decode()}" style="position: absolute; top: 0px; right: 0px; max-width: 35%;">',
+            f'<img src="data:image/png;base64,{base64.b64encode(open(image_path, "rb").read()).decode()}" style="position: absolute; top: 0px; right: 0px; max-width: 25%;">',
             unsafe_allow_html=True)
 
 image_logo()
