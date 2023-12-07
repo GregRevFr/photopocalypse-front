@@ -46,7 +46,7 @@ def build_blurnotblur_page():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<h1 style='color: #000066;'>Check if is blur</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color: #000066;'>Check if photo is blurry</h1>", unsafe_allow_html=True)
 
     # Container for the file uploader
     with st.container():
@@ -113,7 +113,7 @@ def build_blurnotblur_page():
 def sidebar_menu():
     with st.sidebar:
         selected = option_menu(
-            menu_title="BLURBUSTER",
+            menu_title="Photopocalypse-BlurBuster",
             options=["home", "blurnotblur"],
             icons=["house","rocket"],
             menu_icon="cast",
