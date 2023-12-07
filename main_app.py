@@ -98,6 +98,7 @@ def build_blurnotblur_page():
         </style>
     """, unsafe_allow_html=True)
 
+
     st.markdown(
         """
         <h1 style='color: #012862; font-size: 36px; font-family: sans-serif; font-weight: bold;'>
@@ -168,7 +169,6 @@ def build_blurnotblur_page():
                 cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                 col_index += 1
 
-# Call the functions for the script run
 if __name__ == '__main__':
     image_logo()
     sidebar_menu()
