@@ -39,7 +39,7 @@ def image_logo():
     # Leave the first column empty
     # In the second column, add the image and apply CSS styling
     with col3:
-        image_path = '/Users/mj/Desktop/logo.png'
+        image_path = 'photos/logo.png'
         print(f"Image Path: {image_path}")
 
         # Check if the file exists
@@ -168,7 +168,8 @@ def build_blurnotblur_page():
                 cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                 col_index += 1
 
-image_logo()
+
     
 if __name__ == '__main__':
+    image_logo() 
     sidebar_menu()
