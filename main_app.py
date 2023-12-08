@@ -1,6 +1,7 @@
 import streamlit as st
 from streamlit_option_menu import option_menu
 import requests
+import os
 import json
 import base64
 from PIL import Image
@@ -43,7 +44,6 @@ def image_logo():
         print(f"Image Path: {image_path}")
 
         # Check if the file exists
-        import os
         if os.path.exists(image_path):
             print("Image file exists.")
         with open(image_path, "rb") as image_file:
@@ -71,15 +71,15 @@ def sidebar_menu():
 
         # Display the legend in the sidebar
         st.markdown("""
-        <div style="position: fixed; bottom: 20px; left: 40px;">
-            <h1 style='color: #012862; font-size: 20px; font-family: sans-serif;'>
-            Legend:</h1>
-            <p style ='font-size: 17px;'><span style="color: red; margin-right: 24px;">―</span>Blur picture</p>
-            <p style ='font-size: 17px;'><span style="color: blue; margin-right: 24px;">―</span>Picture not blur</p>
-        </div>
-        """,
-        unsafe_allow_html=True
-        )
+            <div style="position: fixed; bottom: 20px; left: 40px;">
+                <h1 style='color: #012862; font-size: 20px; font-family: sans-serif;'>
+                Legend:</h1>
+                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: red;"></span> Blur picture</p>
+                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: blue;"></span> Picture not blur</p>
+            </div>
+            """,
+            unsafe_allow_html=True
+            )
 
     if selected == "BlurNotBlur":
         build_blurnotblur_page()
@@ -168,8 +168,6 @@ def build_blurnotblur_page():
                 cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                 col_index += 1
 
-
-    
 if __name__ == '__main__':
-    image_logo() 
+    image_logo()
     sidebar_menu()
