@@ -168,6 +168,7 @@ def build_blurnotblur_page():
                 cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                 col_index += 1
 
+image_logo()
+    
 if __name__ == '__main__':
-    image_logo()
     sidebar_menu()
