@@ -34,6 +34,58 @@ def card(title, text, image, styles):
     """
     return html_content
 
+def image_logo():
+    col1, col2, col3 = st.columns([1, 2, 3])
+    # Leave the first column empty
+    # In the second column, add the image and apply CSS styling
+    with col3:
+        image_path = '/photos/logo.png'
+        print(f"Image Path: {image_path}")
+
+        # Check if the file exists
+        import os
+        if os.path.exists(image_path):
+            print("Image file exists.")
+        with open(image_path, "rb") as image_file:
+            encoded_image = base64.b64encode(image_file.read()).decode()
+        # Display the image with custom CSS for positioning, size, rounded corners, and border
+        st.markdown(
+            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 37%; border-radius: 10px; border: 3px solid #012862;">',
+            unsafe_allow_html=True)
+
+# Function to display a sidebar menu
+def sidebar_menu():
+    with st.sidebar:
+        selected = option_menu(
+            menu_title="BLURBUSTER",
+            options=["Home", "BlurNotBlur"],
+            icons=["house","rocket"],
+            menu_icon="cast",
+            default_index=1,
+            styles={
+                "container": {"padding": "0!important", "background-color": "#D5D5D8"},
+                "icon": {"color": "#0080FF", "font-size": "25px"},
+                "nav-link-selected": {"background-color": "#012862", "color": "#FFFFFF"},
+            }
+        )
+
+        # Display the legend in the sidebar
+        st.markdown("""
+        <div style="position: fixed; bottom: 20px; left: 40px;">
+            <h1 style='color: #012862; font-size: 20px; font-family: sans-serif;'>
+            Legend:</h1>
+            <p style ='font-size: 17px;'><span style="color: red; margin-right: 24px;">―</span>Blur picture</p>
+            <p style ='font-size: 17px;'><span style="color: blue; margin-right: 24px;">―</span>Picture not blur</p>
+        </div>
+        """,
+        unsafe_allow_html=True
+        )
+
+    if selected == "BlurNotBlur":
+        build_blurnotblur_page()
+    elif selected == "home":
+        st.write("Welcome home!")
+
 # Function to build the main page
 def build_blurnotblur_page():
     # Custom CSS to hide the file uploader status
@@ -46,7 +98,14 @@ def build_blurnotblur_page():
         </style>
     """, unsafe_allow_html=True)
 
-    st.markdown("<h1 style='color: #000066;'>Check if photo is blurry</h1>", unsafe_allow_html=True)
+    st.markdown(
+        """
+        <h1 style='color: #012862; font-size: 36px; font-family: sans-serif; font-weight: bold;'>
+            Check if it is blur</h1>
+        </h1>
+        """,
+        unsafe_allow_html=True
+)
 
     # Container for the file uploader
     with st.container():
@@ -109,26 +168,6 @@ def build_blurnotblur_page():
                 cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                 col_index += 1
 
-# Function to display a sidebar menu
-def sidebar_menu():
-    with st.sidebar:
-        selected = option_menu(
-            menu_title="Photopocalypse-BlurBuster",
-            options=["home", "blurnotblur"],
-            icons=["house","rocket"],
-            menu_icon="cast",
-            default_index=1,
-            styles={
-                "container": {"padding": "0!important", "background-color": "#F0F2F6"},
-                "icon": {"color": "#0080FF", "font-size": "25px"},
-                "nav-link-selected": {"background-color": "#000066", "color": "#FFFFFF"},
-            }
-        )
-    if selected == "blurnotblur":
-        build_blurnotblur_page()
-    elif selected == "home":
-        st.write("Welcome home!")
-
-# Call the sidebar menu function when the script runs
 if __name__ == '__main__':
+    image_logo()
     sidebar_menu()
