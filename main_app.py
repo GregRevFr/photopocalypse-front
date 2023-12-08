@@ -20,6 +20,13 @@ def image_to_base64(image):
     image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
+# Add this new function to send selected files to the deblur API
+def deblur_image(file):
+    url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upload-image/'
+    files = {'file': (file.name, file, 'multipart/form-data')}
+    response = requests.post(url, files=files)
+    return response
+
 # Function to generate HTML content for a card
 def card(title, text, image, styles):
     image_container_height = "200px"
@@ -38,7 +45,6 @@ def card(title, text, image, styles):
 def image_logo():
     col1, col2, col3 = st.columns([1, 2, 3])
     # Leave the first column empty
-    # In the second column, add the image and apply CSS styling
     with col3:
         image_path = 'photos/logo.png'
         print(f"Image Path: {image_path}")
@@ -50,7 +56,7 @@ def image_logo():
             encoded_image = base64.b64encode(image_file.read()).decode()
         # Display the image with custom CSS for positioning, size, rounded corners, and border
         st.markdown(
-            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 37%; border-radius: 10px; border: 3px solid #012862;">',
+            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 35%; border-radius: 10px; border: 3px solid #012862;">',
             unsafe_allow_html=True)
 
 # Function to display a sidebar menu
@@ -75,7 +81,7 @@ def sidebar_menu():
                 <h1 style='color: #012862; font-size: 20px; font-family: sans-serif;'>
                 Legend:</h1>
                 <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: red;"></span> Blur picture</p>
-                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: blue;"></span> Picture not blur</p>
+                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: green;"></span> Picture not blur</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -98,75 +104,92 @@ def build_blurnotblur_page():
         </style>
     """, unsafe_allow_html=True)
 
+    # Custom CSS to text
     st.markdown(
         """
         <h1 style='color: #012862; font-size: 36px; font-family: sans-serif; font-weight: bold;'>
-            Check if it is blur</h1>
+            Blur or not Blur </h1>
         </h1>
         """,
         unsafe_allow_html=True
-)
+    )
 
     # Container for the file uploader
     with st.container():
         uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True,
-                                          type=["txt", "csv", "pdf", "json", "png", "jpg", "svg", "jpeg"])
+                                        type=["txt", "csv", "pdf", "json", "png", "jpg", "svg", "jpeg"])
 
-    # Check if files are uploaded before attempting to display them
-    if uploaded_files:
-        image_cards = []
-        for file in uploaded_files:
-            response = send_file_to_server(file)
-            if response.status_code == 200:
-                image = Image.open(BytesIO(response.content))
-                base64_image = image_to_base64(image)
-                image_sharpness = "Unknown"  # Replace with actual sharpness value if available
-                headers = response.headers
-                blurriness = headers.get("classification")
-                border_color = "red" if blurriness and blurriness.startswith("This picture is blurry.") else "green"
+        # Check if files are uploaded before attempting to display them
+        if uploaded_files:
+            blurry_images = []
+            image_cards = []
+            for file in uploaded_files:
+                response = send_file_to_server(file)
 
-                # Create a dictionary for each image with its details
-                image_cards.append({
-                    "file_name": file.name,
-                    "base64_image": base64_image,
-                    "border_color": border_color,
-                    "sharpness": image_sharpness
-                })
+                if response.status_code == 200:
+                    image = Image.open(BytesIO(response.content))
+                    base64_image = image_to_base64(image)
+                    headers = response.headers
+                    blurriness = headers.get("classification")
+                    border_color = "red" if blurriness and blurriness.startswith("This picture is blurry.") else "green"
 
-        # Sort the list of cards by border_color, green first then red
-        image_cards.sort(key=lambda x: x['border_color'], reverse=True)
+                    if border_color == "red":
+                        # Add to blurry images list if the image is blurry
+                        blurry_images.append(file)
 
-        # Display sorted cards
-        with st.container():
-            cols = st.columns(3)
-            col_index = 0
+                    # Create a dictionary for each image with its details
+                    image_cards.append({
+                        "file_name": file.name,
+                        "base64_image": base64_image,
+                        "border_color": border_color
+                    })
 
-            for image_card in image_cards:
-                card_html = card(
-                    title=image_card["file_name"],
-                    text=f"This image has a {image_card['sharpness']}% of blur.",
-                    image=f"data:image/png;base64,{image_card['base64_image']}",
-                    styles={
-                        'card': {
-                            "width": "100%",
-                            "height": "auto",
-                            "margin": "10px",
-                            "border-radius": "10px",
-                            "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
-                            "display": "flex",
-                            "flex-direction": "column",
-                            "align-items": "center",
-                            "border-color": image_card["border_color"],
-                            "border-style": "solid",
-                            "border-width": "4px"
-                        },
-                        'text': {
-                            "font-family": "calibri"
+            # Sort the list of cards by border_color, green first then red
+            image_cards.sort(key=lambda x: x['border_color'], reverse=True)
+
+            # Display sorted cards
+            with st.container():
+                cols = st.columns(3)
+                col_index = 0
+
+                for image_card in image_cards:
+                    card_html = card(
+                        title=image_card["file_name"],
+                        text="",
+                        image=f"data:image/png;base64,{image_card['base64_image']}",
+                        styles={
+                            'card': {
+                                "width": "100%",
+                                "height": "auto",
+                                "margin": "10px",
+                                "border-radius": "10px",
+                                "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
+                                "display": "flex",
+                                "flex-direction": "column",
+                                "align-items": "center",
+                                "border-color": image_card["border_color"],
+                                "border-style": "solid",
+                                "border-width": "4px"
+                            }
                         }
-                    }
-                )
-                cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
-                col_index += 1
+                    )
+                    cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
+                    col_index += 1
+
+        # Button to deblur all blurry images
+        if st.button("Deblur Blurry Images"):
+            if not blurry_images:
+                st.warning("No blurry images to deblur.")
+            else:
+                for file in blurry_images:
+                    # Send the file to the deblur API
+                    response = deblur_image(file)
+                    if response.status_code == 200:
+                        # Assuming the API returns the image directly
+                        deblurred_image = Image.open(BytesIO(response.content))
+                        st.image(deblurred_image, caption=f"Deblurred {file.name}")
+                    else:
+                        st.error(f"Failed to deblur {file.name}")
 
 if __name__ == '__main__':
     image_logo()
