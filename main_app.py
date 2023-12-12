@@ -54,6 +54,13 @@ def image_to_base64(image):
     image.save(buffered, format="PNG")
     return base64.b64encode(buffered.getvalue()).decode()
 
+# Add this new function to send selected files to the deblur API
+def deblur_image(file):
+    url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upload-image/'
+    files = {'file': (file.name, file, 'multipart/form-data')}
+    response = requests.post(url, files=files)
+    return response
+
 # Function to generate HTML content for a card
 def card(title, text, image, styles):
     image_container_height = "200px"
@@ -72,7 +79,6 @@ def card(title, text, image, styles):
 def image_logo():
     col1, col2, col3 = st.columns([1, 2, 3])
     # Leave the first column empty
-    # In the second column, add the image and apply CSS styling
     with col3:
         image_path = 'photos/logo.png'
         print(f"Image Path: {image_path}")
@@ -84,7 +90,7 @@ def image_logo():
             encoded_image = base64.b64encode(image_file.read()).decode()
         # Display the image with custom CSS for positioning, size, rounded corners, and border
         st.markdown(
-            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 37%; border-radius: 10px; border: 3px solid #012862;">',
+            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 35%; border-radius: 10px; border: 3px solid #012862;">',
             unsafe_allow_html=True)
 
 # Function to display a sidebar menu
@@ -109,7 +115,7 @@ def sidebar_menu():
                 <h1 style='color: #012862; font-size: 20px; font-family: sans-serif;'>
                 Legend:</h1>
                 <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: red;"></span> Blur picture</p>
-                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: blue;"></span> Picture not blur</p>
+                <p style ='font-size: 17px;'><span style="display: inline-block; width: 30px; height: 7px; background-color: green;"></span> Picture not blur</p>
             </div>
             """,
             unsafe_allow_html=True
@@ -132,14 +138,15 @@ def build_blurnotblur_page():
         </style>
     """, unsafe_allow_html=True)
 
+    # Custom CSS to text
     st.markdown(
         """
         <h1 style='color: #012862; font-size: 36px; font-family: sans-serif; font-weight: bold;'>
-            Blurbuster</h1>
+            Blur or not Blur </h1>
         </h1>
         """,
         unsafe_allow_html=True
-)
+    )
 
     # Container for the file uploader
     with st.container():
@@ -199,10 +206,24 @@ def build_blurnotblur_page():
                         'text': {
                             "font-family": "calibri"
                         }
-                    }
-                )
-                cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
-                col_index += 1
+                    )
+                    cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
+                    col_index += 1
+
+        # Button to deblur all blurry images
+        if st.button("Deblur Blurry Images"):
+            if not blurry_images:
+                st.warning("No blurry images to deblur.")
+            else:
+                for file in blurry_images:
+                    # Send the file to the deblur API
+                    response = deblur_image(file)
+                    if response.status_code == 200:
+                        # Assuming the API returns the image directly
+                        deblurred_image = Image.open(BytesIO(response.content))
+                        st.image(deblurred_image, caption=f"Deblurred {file.name}")
+                    else:
+                        st.error(f"Failed to deblur {file.name}")
 
 if __name__ == '__main__':
     # Use the gradient class for the whole page
