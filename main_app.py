@@ -201,11 +201,10 @@ def build_blurnotblur_page():
                             "border-style": "solid",
                             "border-width": "4px",
                             "transition": "transform 0.2s"# Ensure this is included in your card style
-
                         },
                         'text': {
                             "font-family": "calibri"
-                        }
+                        }}
                     )
                     cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                     col_index += 1
