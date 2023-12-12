@@ -7,6 +7,40 @@ import base64
 from PIL import Image
 from io import BytesIO
 
+# At the beginning of your Streamlit app script, add the following
+# st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+    <style>
+    /* Apply the styles to the body and Streamlit's main container */
+    body, .stApp {
+        background: linear-gradient(45deg, #bfe9ff, #ffffff) !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        overflow: auto !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Hover effect
+st.markdown(
+    """
+    <style>
+    .card {
+    transition: transform 0.2s; /* Smooth transition for the transform */
+    /* Your existing card styles here */
+    }
+    .card:hover {
+    transform: scale(1.05); /* Increase the scale slightly when hovered */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True)
+
 # Function to send file to server
 def send_file_to_server(file):
     url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upload-image/'
@@ -34,7 +68,7 @@ def card(title, text, image, styles):
     text_style = "; ".join(f"{key}: {value}" for key, value in styles.get("text", {}).items())
 
     html_content = f"""
-    <div style="{card_style}">
+    <div class="card" style="{card_style}">
         <div style="height: {image_container_height};">
             <img src="{image}" alt="{title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">
         </div>
@@ -117,60 +151,60 @@ def build_blurnotblur_page():
     # Container for the file uploader
     with st.container():
         uploaded_files = st.file_uploader("Choose a file", accept_multiple_files=True,
-                                        type=["txt", "csv", "pdf", "json", "png", "jpg", "svg", "jpeg"])
+                                          type=["txt", "csv", "pdf", "json", "png", "jpg", "svg", "jpeg"])
 
-        # Check if files are uploaded before attempting to display them
-        if uploaded_files:
-            blurry_images = []
-            image_cards = []
-            for file in uploaded_files:
-                response = send_file_to_server(file)
+    # Check if files are uploaded before attempting to display them
+    if uploaded_files:
+        image_cards = []
+        for file in uploaded_files:
+            response = send_file_to_server(file)
+            if response.status_code == 200:
+                image = Image.open(BytesIO(response.content))
+                base64_image = image_to_base64(image)
+                image_sharpness = "Unknown"  # Replace with actual sharpness value if available
+                headers = response.headers
+                blurriness = headers.get("classification")
+                border_color = "red" if blurriness and blurriness.startswith("This picture is blurry.") else "green"
 
-                if response.status_code == 200:
-                    image = Image.open(BytesIO(response.content))
-                    base64_image = image_to_base64(image)
-                    headers = response.headers
-                    blurriness = headers.get("classification")
-                    border_color = "red" if blurriness and blurriness.startswith("This picture is blurry.") else "green"
+                # Create a dictionary for each image with its details
+                image_cards.append({
+                    "file_name": file.name,
+                    "base64_image": base64_image,
+                    "border_color": border_color,
+                    "sharpness": image_sharpness
+                })
 
-                    if border_color == "red":
-                        # Add to blurry images list if the image is blurry
-                        blurry_images.append(file)
+        # Sort the list of cards by border_color, green first then red
+        image_cards.sort(key=lambda x: x['border_color'], reverse=True)
 
-                    # Create a dictionary for each image with its details
-                    image_cards.append({
-                        "file_name": file.name,
-                        "base64_image": base64_image,
-                        "border_color": border_color
-                    })
+        # Display sorted cards
+        with st.container():
+            cols = st.columns(3)
+            col_index = 0
 
-            # Sort the list of cards by border_color, green first then red
-            image_cards.sort(key=lambda x: x['border_color'], reverse=True)
+            for image_card in image_cards:
+                card_html = card(
+                    title=image_card["file_name"],
+                    text=f"This image has a {image_card['sharpness']}% of blur.",
+                    image=f"data:image/png;base64,{image_card['base64_image']}",
+                    styles={
+                        'card': {
+                            "width": "100%",
+                            "height": "auto",
+                            "margin": "10px",
+                            "border-radius": "10px",
+                            "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
+                            "display": "flex",
+                            "flex-direction": "column",
+                            "align-items": "center",
+                            "border-color": image_card["border_color"],
+                            "border-style": "solid",
+                            "border-width": "4px",
+                            "transition": "transform 0.2s"# Ensure this is included in your card style
 
-            # Display sorted cards
-            with st.container():
-                cols = st.columns(3)
-                col_index = 0
-
-                for image_card in image_cards:
-                    card_html = card(
-                        title=image_card["file_name"],
-                        text="",
-                        image=f"data:image/png;base64,{image_card['base64_image']}",
-                        styles={
-                            'card': {
-                                "width": "100%",
-                                "height": "auto",
-                                "margin": "10px",
-                                "border-radius": "10px",
-                                "box-shadow": "0 0 10px rgba(0,0,0,0.5)",
-                                "display": "flex",
-                                "flex-direction": "column",
-                                "align-items": "center",
-                                "border-color": image_card["border_color"],
-                                "border-style": "solid",
-                                "border-width": "4px"
-                            }
+                        },
+                        'text': {
+                            "font-family": "calibri"
                         }
                     )
                     cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
@@ -192,5 +226,9 @@ def build_blurnotblur_page():
                         st.error(f"Failed to deblur {file.name}")
 
 if __name__ == '__main__':
+    # Use the gradient class for the whole page
+    st.markdown('<div class="gradient-background">', unsafe_allow_html=True)
     image_logo()
     sidebar_menu()
+        # Close the div tag at the end of your content
+    st.markdown('</div>', unsafe_allow_html=True)
