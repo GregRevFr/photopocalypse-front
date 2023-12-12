@@ -7,6 +7,40 @@ import base64
 from PIL import Image
 from io import BytesIO
 
+# At the beginning of your Streamlit app script, add the following
+# st.set_page_config(layout="wide")
+
+st.markdown(
+    """
+    <style>
+    /* Apply the styles to the body and Streamlit's main container */
+    body, .stApp {
+        background: linear-gradient(45deg, #bfe9ff, #ffffff) !important;
+        width: 100vw !important;
+        height: 100vh !important;
+        margin: 0 !important;
+        overflow: auto !important;
+    }
+    </style>
+    """,
+    unsafe_allow_html=True
+)
+
+# Hover effect
+st.markdown(
+    """
+    <style>
+    .card {
+    transition: transform 0.2s; /* Smooth transition for the transform */
+    /* Your existing card styles here */
+    }
+    .card:hover {
+    transform: scale(1.05); /* Increase the scale slightly when hovered */
+    }
+    </style>
+    """,
+    unsafe_allow_html=True)
+
 # Function to send file to server
 def send_file_to_server(file):
     url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upload-image/'
@@ -27,7 +61,7 @@ def card(title, text, image, styles):
     text_style = "; ".join(f"{key}: {value}" for key, value in styles.get("text", {}).items())
 
     html_content = f"""
-    <div style="{card_style}">
+    <div class="card" style="{card_style}">
         <div style="height: {image_container_height};">
             <img src="{image}" alt="{title}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 7px;">
         </div>
@@ -101,7 +135,7 @@ def build_blurnotblur_page():
     st.markdown(
         """
         <h1 style='color: #012862; font-size: 36px; font-family: sans-serif; font-weight: bold;'>
-            Check if it is blur</h1>
+            Blurbuster</h1>
         </h1>
         """,
         unsafe_allow_html=True
@@ -158,7 +192,9 @@ def build_blurnotblur_page():
                             "align-items": "center",
                             "border-color": image_card["border_color"],
                             "border-style": "solid",
-                            "border-width": "4px"
+                            "border-width": "4px",
+                            "transition": "transform 0.2s"# Ensure this is included in your card style
+
                         },
                         'text': {
                             "font-family": "calibri"
@@ -169,5 +205,9 @@ def build_blurnotblur_page():
                 col_index += 1
 
 if __name__ == '__main__':
+    # Use the gradient class for the whole page
+    st.markdown('<div class="gradient-background">', unsafe_allow_html=True)
     image_logo()
     sidebar_menu()
+        # Close the div tag at the end of your content
+    st.markdown('</div>', unsafe_allow_html=True)
