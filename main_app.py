@@ -206,8 +206,8 @@ def build_blurnotblur_page():
                             "font-family": "calibri"
                         }}
                     )
-                    cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
-                    col_index += 1
+                cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
+                col_index += 1
 
         # Button to deblur all blurry images
         if st.button("Deblur Blurry Images"):
