@@ -56,7 +56,7 @@ def image_to_base64(image):
 
 # Add this new function to send selected files to the deblur API
 def deblur_image(file):
-    url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upload-image/'
+    url = 'https://phurge-ieuwqkua2q-ew.a.run.app/upload-image/'
     files = {'file': (file.name, file, 'multipart/form-data')}
     response = requests.post(url, files=files)
     return response
