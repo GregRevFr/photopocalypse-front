@@ -80,7 +80,7 @@ def image_logo():
     col1, col2, col3 = st.columns([1, 2, 3])
     # Leave the first column empty
     with col3:
-        image_path = '/photos/logo.png'
+        image_path = 'photos/logo.png'
         print(f"Image Path: {image_path}")
 
         # Check if the file exists
