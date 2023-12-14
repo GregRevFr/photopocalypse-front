@@ -147,26 +147,26 @@ def image_logo():
         print(f'Image Path: {image_path}')
         # Check if the file exists
         if os.path.exists(image_path):
-            print(“Image file exists.“)
-        with open(image_path, “rb”) as image_file:
+            print("Image file exists.")
+        with open(image_path, "rb") as image_file:
             encoded_image = base64.b64encode(image_file.read()).decode()
         # Display the image with custom CSS for positioning, size, rounded corners, and border
         st.markdown(
-            f’<img src=“data:image/png;base64,{encoded_image}” style=“position: absolute; top: 0px; right: 0px; max-width: 30%;“>’,
+            f’<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 30%;">',
             unsafe_allow_html=True)
 # Function to display a sidebar menu
 def sidebar_menu():
     with st.sidebar:
         selected = option_menu(
-            menu_title=“PHOTOPOCALYPSE”,
-            options=[“HOME”, “PHOTOPOCALYPSE”, “PHOTOUNION”],
-            icons=[“house”, “rocket”, “camera”],
-            menu_icon=“cast”,
+            menu_title="PHOTOPOCALYPSE",
+            options=["HOME", "PHOTOPOCALYPSE", "PHOTOUNION"],
+            icons=["house", "rocket", "camera"],
+            menu_icon="cast",
             default_index=1,
             styles={
-                “container”: {“padding”: “0!important”, “background-color”: “#F0F2F6”},
-                “icon”: {“color”: “#0080FF”, “font-size”: “25px”},
-                “nav-link-selected”: {“background-color”: “#012862”, “color”: “#FFFFFF”},
+                "container": {"padding": "0!important", "background-color": "#F0F2F6"},
+                "icon": {"color": "#0080FF", "font-size": "25px"},
+                "nav-link-selected": {"background-color": "#012862", "color": "#FFFFFF"},
             }
         )
 
