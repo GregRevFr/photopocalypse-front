@@ -3,12 +3,9 @@ streamlit_option_menu
 requests
 numpy
 pandas
-matplotlib
 scikit-learn
 tensorflow
 keras
 requests
-flask
-django
 google-api-python-client
 hdbscan
