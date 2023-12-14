@@ -276,7 +276,7 @@ def build_blurnotblur_page():
                     col_index += 1
 
         # Button to deblur all blurry images
-        if st.button("Deblur Blurry Images"):
+        if st.button("Enhance Images"):
             if not blurry_images:
                 st.warning("No blurry images to deblur.")
             else:
