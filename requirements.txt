@@ -10,3 +10,4 @@ requests
 google-api-python-client
 hdbscan
 matplotlib
+brisque
