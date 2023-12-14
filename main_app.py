@@ -152,7 +152,7 @@ def image_logo():
             encoded_image = base64.b64encode(image_file.read()).decode()
         # Display the image with custom CSS for positioning, size, rounded corners, and border
         st.markdown(
-            f’<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 30%;">',
+            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 30%;">',
             unsafe_allow_html=True)
 # Function to display a sidebar menu
 def sidebar_menu():
