@@ -283,13 +283,6 @@ def build_blurnotblur_page():
             for file in uploaded_files:
                 response = send_file_to_server(file)
 
-                # added for testing
-                # print(file)
-                contents = file.getvalue()
-                image_cache[file.name] = contents
-
-                # finish added
-
                 if response.status_code == 200:
                     image = Image.open(BytesIO(response.content))
                     base64_image = image_to_base64(image)
