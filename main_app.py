@@ -144,7 +144,7 @@ def image_logo():
     # Leave the first column empty
     with col3:
         image_path = 'photos/logo.png'
-        print(f”Image Path: {image_path}“)
+        print(f'Image Path: {image_path}')
         # Check if the file exists
         if os.path.exists(image_path):
             print(“Image file exists.“)
