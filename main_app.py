@@ -175,8 +175,8 @@ def image_to_base64(image):
 # Add this new function to send selected files to the deblur API
 def deblur_image(file):
     url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upscale-images/'
-    filename, postprocessed_image = requests.post(url)
-    return filename, postprocessed_image  # io.BytesIO(postprocessed_image)
+    response = requests.post(url)
+    return response  # io.BytesIO(postprocessed_image)
 
 
 # Function to generate HTML content for a card
@@ -339,7 +339,7 @@ def build_blurnotblur_page():
                 st.warning("No blurry images to deblur.")
             else:
                 for file in blurry_images:
-                    filename, response = deblur_image(file)
+                    response = deblur_image(file)
                     if response.status_code == 200:
                         # Extract filename from the Content-Disposition header
                         content_disposition = response.headers.get('Content-Disposition')
