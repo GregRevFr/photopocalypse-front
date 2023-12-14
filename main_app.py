@@ -333,37 +333,37 @@ def build_blurnotblur_page():
                     cols[col_index % 3].markdown(card_html, unsafe_allow_html=True)
                     col_index += 1
 
-        # Button to deblur all blurry images
-        if st.button("Enhance Images"):
-            if not blurry_images:
-                st.warning("No blurry images to deblur.")
-            else:
-                for file in blurry_images:
-                    response = deblur_image(file)
-                    if response.status_code == 200:
-                        # Extract filename from the Content-Disposition header
-                        content_disposition = response.headers.get('Content-Disposition')
-                        if content_disposition:
-                            # Example header format: "attachment; filename=processed_image.jpg"
-                            parts = content_disposition.split(';')
-                            filename_part = next(
-                                (part.strip() for part in parts if part.strip().startswith('filename=')), None)
+        # # Button to deblur all blurry images
+        # if st.button("Enhance Images"):
+        #     if not blurry_images:
+        #         st.warning("No blurry images to deblur.")
+        #     else:
+        #         for file in blurry_images:
+        #             response = deblur_image(file)
+        #             if response.status_code == 200:
+        #                 # Extract filename from the Content-Disposition header
+        #                 content_disposition = response.headers.get('Content-Disposition')
+        #                 if content_disposition:
+        #                     # Example header format: "attachment; filename=processed_image.jpg"
+        #                     parts = content_disposition.split(';')
+        #                     filename_part = next(
+        #                         (part.strip() for part in parts if part.strip().startswith('filename=')), None)
 
-                        # Assuming the API returns the image directly
-                        image = Image.open(BytesIO(response.content))
+        #                 # Assuming the API returns the image directly
+        #                 image = Image.open(BytesIO(response.content))
 
-                        # Calculate the aspect ratio and set the desired width
-                        aspect_ratio = image.height / image.width
-                        new_width = 200
-                        new_height = int(aspect_ratio * new_width)
+        #                 # Calculate the aspect ratio and set the desired width
+        #                 aspect_ratio = image.height / image.width
+        #                 new_width = 200
+        #                 new_height = int(aspect_ratio * new_width)
 
-                        # Resize the image
-                        resized_image = image.resize((new_width, new_height))
+        #                 # Resize the image
+        #                 resized_image = image.resize((new_width, new_height))
 
-                        # Display the image with Streamlit
-                        st.image(resized_image, caption=f"Deblurred {filename_part}")
-                    else:
-                        st.error(f"Failed to deblur {file.name}")
+        #                 # Display the image with Streamlit
+        #                 st.image(resized_image, caption=f"Deblurred {filename_part}")
+        #             else:
+        #                 st.error(f"Failed to deblur {file.name}")
 
 
 # Function to build the main page
