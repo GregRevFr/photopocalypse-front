@@ -15,7 +15,6 @@ import numpy as np
 import requests
 from PIL import Image
 from io import BytesIO
-import tensorflow_hub as hub
 
 from keras.applications.inception_v3 import InceptionV3, decode_predictions
 
