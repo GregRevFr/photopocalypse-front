@@ -10,7 +10,6 @@ from keras.preprocessing import image
 import hdbscan
 from sklearn.metrics.pairwise import pairwise_distances
 import pickle
-from imutils import paths
 import cv2
 from brisque import BRISQUE
 import cv2
