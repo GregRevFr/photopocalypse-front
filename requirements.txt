@@ -10,5 +10,6 @@ requests
 google-api-python-client
 hdbscan
 matplotlib
+imutils
 brisque
 cv2
