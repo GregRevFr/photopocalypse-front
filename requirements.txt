@@ -1,7 +1,6 @@
 streamlit
 streamlit_option_menu
 requests
-opencv-python
 numpy
 pandas
 scikit-learn
@@ -11,5 +10,3 @@ requests
 google-api-python-client
 hdbscan
 matplotlib
-imutils
-brisque
