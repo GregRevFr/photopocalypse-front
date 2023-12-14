@@ -1,7 +1,7 @@
 streamlit
 streamlit_option_menu
 requests
-CV2
+opencv-python-headless
 numpy
 pandas
 scikit-learn
