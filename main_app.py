@@ -2,20 +2,67 @@ import streamlit as st
 from streamlit_option_menu import option_menu
 import requests
 import os
-import json
 import base64
-from PIL import Image
-from io import BytesIO
 from googleapiclient.discovery import build
-from google_auth_oauthlib.flow import InstalledAppFlow
-from google.auth.transport.requests import Request
-import pickle
 import numpy as np
 from keras.applications.resnet50 import ResNet50, preprocess_input
 from keras.preprocessing import image
-import matplotlib.pyplot as plt
 import hdbscan
 from sklearn.metrics.pairwise import pairwise_distances
+import pickle
+from imutils import paths
+import cv2
+from brisque import BRISQUE
+import cv2
+import numpy as np
+import requests
+from PIL import Image
+from io import BytesIO
+import tensorflow_hub as hub
+
+from keras.applications.inception_v3 import InceptionV3, decode_predictions
+
+# Other imports...
+
+# Initialize the InceptionV3 model
+inception_model = InceptionV3(weights='imagenet')
+
+from cachetools import LRUCache
+
+image_cache = LRUCache(maxsize=100)
+import io
+
+# Initialize BRISQUE model
+brisque_model = BRISQUE()
+
+
+# Function to calculate BRISQUE score from image URL
+def calculate_brisque_score_from_url(img_url):
+    # Download the image from the URL
+    response = requests.get(img_url)
+    img = Image.open(BytesIO(response.content))
+    img = img.convert('RGB')  # Ensure RGB format
+    img = np.array(img)  # Convert PIL image to numpy array
+
+    # Convert RGB to BGR for OpenCV (if needed)
+    img = img[:, :, ::-1]
+
+    score = brisque_model.score(img)
+    return score
+
+
+def get_image_description(url):
+    response = requests.get(url)
+    img = Image.open(BytesIO(response.content))
+    img = img.resize((299, 299))  # Required size for InceptionV3
+    img_array = image.img_to_array(img)
+    img_array = np.expand_dims(img_array, axis=0)
+    img_array = preprocess_input(img_array)
+
+    preds = inception_model.predict(img_array)
+    # Decode the results into a list of tuples (class, description, probability)
+    return decode_predictions(preds, top=1)[0][0][1]  # Top prediction description
+
 
 # Scopes for Google Photos API
 SCOPES = ['https://www.googleapis.com/auth/photoslibrary.readonly']
@@ -47,10 +94,9 @@ st.markdown(
 
 
 # Function definitions for PhotoUnion
-def get_google_photos_service(credentials):
-    print(credentials)
-    flow = InstalledAppFlow.from_client_config(credentials, SCOPES)
-    creds = flow.run_local_server(port=0)
+def get_google_photos_service(token):
+    creds = pickle.load(token)
+
     return build('photoslibrary', 'v1', credentials=creds, static_discovery=False)
 
 
@@ -80,24 +126,44 @@ def process_images(credentials):
     clusterer = hdbscan.HDBSCAN(metric='precomputed', min_cluster_size=2, min_samples=1, cluster_selection_epsilon=0.1)
     clusterer.fit(distance_matrix)
     labels = clusterer.labels_
+
     image_groups = {}
     for i, label in enumerate(labels):
         if label != -1:
-            if label in image_groups:
-                image_groups[label].append(media_items[i]['baseUrl'])
-            else:
-                image_groups[label] = [media_items[i]['baseUrl']]
+            if label not in image_groups:
+                image_groups[label] = {'indices': [], 'images': [], 'average_score': 0, 'descriptions': []}
+            image_groups[label]['indices'].append(i)
+            image_groups[label]['images'].append(media_items[i]['baseUrl'])
+            # Optionally add descriptions
+            description = get_image_description(media_items[i]['baseUrl'])
+            image_groups[label]['descriptions'].append(description)
+
+    # Compute average scores
+    for group_id, group_info in image_groups.items():
+        group_indices = group_info['indices']
+        if len(group_indices) > 1:
+            group_distances = [distance_matrix[i][j] for i in group_indices for j in group_indices if i != j]
+            group_info['average_score'] = np.mean(group_distances)
+        else:
+            group_info['average_score'] = 0
+
     return image_groups
 
 
+# Modify the display_image_groups function
 def display_image_groups(image_groups):
-    for group_id, images in image_groups.items():
+    for group_id, group_info in image_groups.items():
+        images, average_score, descriptions = group_info['images'], group_info['average_score'], group_info[
+            'descriptions']
         if len(images) > 0:
-            st.write(f"Group {group_id} ({len(images)} images):")
+            st.write(f"Group {group_id} - Average Similarity Score: {average_score:.2f}")
+            st.write("Descriptions:", ", ".join(set(descriptions)))  # Display unique descriptions
             cols = st.columns(len(images))
             for col, img_url in zip(cols, images):
                 img = Image.open(BytesIO(requests.get(img_url).content))
                 col.image(img, use_column_width=True)
+                brisque_score = calculate_brisque_score_from_url(img_url)
+                col.write(f"BRISQUE Score: {brisque_score:.2f}")
 
 
 # Function to send file to server
@@ -117,10 +183,9 @@ def image_to_base64(image):
 
 # Add this new function to send selected files to the deblur API
 def deblur_image(file):
-    url = 'https://phurge-ieuwqkua2q-ew.a.run.app/upload-image/'
-    files = {'file': (file.name, file, 'multipart/form-data')}
-    response = requests.post(url, files=files)
-    return response
+    url = 'https://phurge-api-ieuwqkua2q-ew.a.run.app/upscale-images/'
+    filename, postprocessed_image = requests.post(url)
+    return filename, postprocessed_image  # io.BytesIO(postprocessed_image)
 
 
 # Function to generate HTML content for a card
@@ -144,7 +209,8 @@ def image_logo():
     # Leave the first column empty
     with col3:
         image_path = 'photos/logo.png'
-        print(f'Image Path: {image_path}')
+        print(f"Image Path: {image_path}")
+
         # Check if the file exists
         if os.path.exists(image_path):
             print("Image file exists.")
@@ -152,8 +218,10 @@ def image_logo():
             encoded_image = base64.b64encode(image_file.read()).decode()
         # Display the image with custom CSS for positioning, size, rounded corners, and border
         st.markdown(
-            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 30%;">',
+            f'<img src="data:image/png;base64,{encoded_image}" style="position: absolute; top: 0px; right: 0px; max-width: 40%;">',
             unsafe_allow_html=True)
+
+
 # Function to display a sidebar menu
 def sidebar_menu():
     with st.sidebar:
@@ -164,12 +232,11 @@ def sidebar_menu():
             menu_icon="cast",
             default_index=1,
             styles={
-                "container": {"padding": "0!important", "background-color": "#F0F2F6"},
+                "container": {"padding": "0!important", "background-color": "#D5D5D8"},
                 "icon": {"color": "#0080FF", "font-size": "25px"},
                 "nav-link-selected": {"background-color": "#012862", "color": "#FFFFFF"},
             }
         )
-
 
         # Display the legend in the sidebar
         st.markdown("""
@@ -224,6 +291,13 @@ def build_blurnotblur_page():
             image_cards = []
             for file in uploaded_files:
                 response = send_file_to_server(file)
+
+                # added for testing
+                # print(file)
+                contents = file.getvalue()
+                image_cache[file.name] = contents
+
+                # finish added
 
                 if response.status_code == 200:
                     image = Image.open(BytesIO(response.content))
@@ -281,12 +355,29 @@ def build_blurnotblur_page():
                 st.warning("No blurry images to deblur.")
             else:
                 for file in blurry_images:
-                    # Send the file to the deblur API
-                    response = deblur_image(file)
+                    filename, response = deblur_image(file)
                     if response.status_code == 200:
+                        # Extract filename from the Content-Disposition header
+                        content_disposition = response.headers.get('Content-Disposition')
+                        if content_disposition:
+                            # Example header format: "attachment; filename=processed_image.jpg"
+                            parts = content_disposition.split(';')
+                            filename_part = next(
+                                (part.strip() for part in parts if part.strip().startswith('filename=')), None)
+
                         # Assuming the API returns the image directly
-                        deblurred_image = Image.open(BytesIO(response.content))
-                        st.image(deblurred_image, caption=f"Deblurred {file.name}")
+                        image = Image.open(BytesIO(response.content))
+
+                        # Calculate the aspect ratio and set the desired width
+                        aspect_ratio = image.height / image.width
+                        new_width = 200
+                        new_height = int(aspect_ratio * new_width)
+
+                        # Resize the image
+                        resized_image = image.resize((new_width, new_height))
+
+                        # Display the image with Streamlit
+                        st.image(resized_image, caption=f"Deblurred {filename_part}")
                     else:
                         st.error(f"Failed to deblur {file.name}")
 
@@ -295,16 +386,11 @@ def build_blurnotblur_page():
 def build_photounion_page():
     # Custom CSS to hide the file uploader status
     st.title("PhotoUnion")
-    st.write("--")
-    st.write("--")
     st.write("PhotoUnion groups your similar images together using advanced machine learning techniques.")
-    st.write("--")
-
-    uploaded_credentials = st.file_uploader("Upload Google API Credentials", type=["json"])
+    uploaded_credentials = st.file_uploader("Upload Google API Token", type=["pickle"])
 
     if uploaded_credentials is not None:
-        credentials_json = json.loads(uploaded_credentials.getvalue().decode())
-        image_groups = process_images(credentials_json)
+        image_groups = process_images(uploaded_credentials)
         display_image_groups(image_groups)
 
 
