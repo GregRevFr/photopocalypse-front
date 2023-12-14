@@ -10,7 +10,7 @@ from keras.preprocessing import image
 import hdbscan
 from sklearn.metrics.pairwise import pairwise_distances
 import pickle
-from brisque import BRISQUE
+# from brisque import BRISQUE
 import numpy as np
 import requests
 from PIL import Image
@@ -23,13 +23,8 @@ from keras.applications.inception_v3 import InceptionV3, decode_predictions
 # Initialize the InceptionV3 model
 inception_model = InceptionV3(weights='imagenet')
 
-from cachetools import LRUCache
-
-image_cache = LRUCache(maxsize=100)
-import io
-
 # Initialize BRISQUE model
-brisque_model = BRISQUE()
+# brisque_model = BRISQUE()
 
 
 # Function to calculate BRISQUE score from image URL
@@ -43,7 +38,7 @@ def calculate_brisque_score_from_url(img_url):
     # Convert RGB to BGR for OpenCV (if needed)
     img = img[:, :, ::-1]
 
-    score = brisque_model.score(img)
+    score = 25 # brisque_model.score(img)
     return score
 
 
