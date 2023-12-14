@@ -298,9 +298,9 @@ def build_photounion_page():
     # Custom CSS to hide the file uploader status
     st.title("PhotoUnion")
     st.write("PhotoUnion groups your similar images together using advanced machine learning techniques.")
-    st.write("PhotoUnion groups your similar images together using advanced machine learning techniques.")
-    st.write("PhotoUnion groups your similar images together using advanced machine learning techniques.")
-    st.write("PhotoUnion groups your similar images together using advanced machine learning techniques.")
+    st.write("--")
+    st.write("--")
+    st.write("--")
 
     uploaded_credentials = st.file_uploader("Upload Google API Credentials", type=["json"])
 
